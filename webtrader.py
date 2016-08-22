@@ -1,9 +1,10 @@
-import ticker
 import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
 import numpy as np
 import os
+from yahoo_finance import Share
+import time
 
 __author__ = "jambu"
 
@@ -18,20 +19,22 @@ def main():
     fast_period = 10
     slow_period = 15
 
-    # Select which CSV (Ticker/Duration) to use for analysis
-    csv_path = "/Users/andyjambu/Documents/git/primate/financials"
-    csv_options = os.listdir(csv_path)
-    ascii_csv_dict={}
-    mod = 97
-    print "Multiple Data CSV's found:"
-    for csv_names in csv_options:
-        ascii_csv_dict[str(unichr(mod))] = csv_names
-        print str(unichr(mod)) + ")    " + csv_names
-        mod += 1
-    ascii = raw_input("Which input file?")
-    csv_path += "/" + ascii_csv_dict[ascii]
-
-    ticker_obj = ticker.Ticker(csv_path)
+    ticker = raw_input("Enter Stock Ticker of Interest:")
+    period = raw_input("Enter Period of Interest (1M/6M/YTD/1Y/2Y/5Y/MAX):")
+    end_time = time.strftime("%d-%m-%Y")
+    start_time_list = end_time.split("-")
+    if period.upper() == "YTD":
+        start_time_list[0] = "1"
+        start_time_list[1] = "1"
+    elif period.upper()[-1:] == "M":
+        month = int(start_time_list[1]) - int(period[0])
+        if month <= 0:
+            month += 12
+        start_time_list[1] = str(month)
+    elif period.upper()[-1:] == "Y":
+        year = int(start_time_list[2]) - int(period[0])
+        start_time_list[1] = str(year)
+    ticker_obj = Share(ticker)
     print "-----------------------------------\nCrunching the Numbers\n"
     results = crunch(ticker_obj, fast_period, slow_period)
     print "Plotting Results..."
